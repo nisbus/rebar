@@ -337,7 +337,7 @@ source_engine_avail({Name, _, _}=Source)
 scm_client_vsn(false, _VsnArg, _VsnRegex) ->
     false;
 scm_client_vsn(Path, VsnArg, VsnRegex) ->
-    Info = os:cmd("LANG=C " ++ Path ++ VsnArg),
+    Info = os:cmd(Path ++ VsnArg),
     case re:run(Info, VsnRegex, [{capture, all_but_first, list}]) of
         {match, Match} ->
             list_to_tuple([list_to_integer(S) || S <- Match]);
