@@ -278,7 +278,13 @@ download_source(AppDir, {hg, Url, Rev}) ->
 download_source(AppDir, {git, Url, {branch, Branch}}) ->
     ok = filelib:ensure_dir(AppDir),
     rebar_utils:sh(?FMT("git clone -n ~s ~s", [Url, filename:basename(AppDir)]), [], filename:dirname(AppDir)),
-    rebar_utils:sh(?FMT("git checkout -q origin/~s", [Branch]), [], AppDir);
+    case Branch of 
+       [] ->
+          rebar_utils:sh(?FMT("git checkout -q origin", []), [], AppDir);
+       _ ->
+          rebar_utils:sh(?FMT("git checkout -q origin/~s", [Branch]), [], AppDir)
+    end;
+
 download_source(AppDir, {git, Url, {tag, Tag}}) ->
     ok = filelib:ensure_dir(AppDir),
     rebar_utils:sh(?FMT("git clone -n ~s ~s", [Url, filename:basename(AppDir)]), [], filename:dirname(AppDir)),
