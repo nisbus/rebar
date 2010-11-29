@@ -311,7 +311,12 @@ update_source(Dep) ->
 
 update_source(AppDir, {git, _Url, {branch, Branch}}) ->
     rebar_utils:sh(?FMT("git fetch origin", []), [], AppDir),
-    rebar_utils:sh(?FMT("git checkout -q origin/~s", [Branch]), [], AppDir);
+    case Branch of 
+       [] ->
+          rebar_utils:sh(?FMT("git checkout -q origin", []), [], AppDir);
+       _ ->
+          rebar_utils:sh(?FMT("git checkout -q origin/~s", [Branch]), [], AppDir)
+    end;
 update_source(AppDir, {git, _Url, {tag, Tag}}) ->
     rebar_utils:sh(?FMT("git fetch --tags origin", []), [], AppDir),
     rebar_utils:sh(?FMT("git checkout -q ~s", [Tag]), [], AppDir);
@@ -343,14 +348,25 @@ source_engine_avail({Name, _, _}=Source)
 scm_client_vsn(false, _VsnArg, _VsnRegex) ->
     false;
 scm_client_vsn(Path, VsnArg, VsnRegex) ->
-    Info = os:cmd(Path ++ VsnArg),
-    case re:run(Info, VsnRegex, [{capture, all_but_first, list}]) of
-        {match, Match} ->
-            list_to_tuple([list_to_integer(S) || S <- Match]);
+    case erlang:system_info(system_architecture) of
+        win32 ->
+            Info = os:cmd(Path ++ VsnArg),
+            case re:run(Info, VsnRegex, [{capture, all_but_first, list}]) of
+                {match, Match} ->
+                    list_to_tuple([list_to_integer(S) || S <- Match]);
+                _ ->
+                    false
+            end;
         _ ->
-            false
+           Info = os:cmd("LANG=C"++Path ++ VsnArg),
+            case re:run(Info, VsnRegex, [{capture, all_but_first, list}]) of
+                {match, Match} ->
+                    list_to_tuple([list_to_integer(S) || S <- Match]);
+                _ ->
+                    false
+            end
     end.
-
+ 
 required_scm_client_vsn(hg)  -> {1, 1};
 required_scm_client_vsn(git) -> {1, 5};
 required_scm_client_vsn(bzr) -> {2, 0};
