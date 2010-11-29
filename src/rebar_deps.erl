@@ -363,7 +363,7 @@ scm_client_vsn(Path, VsnArg, VsnRegex) ->
                     false
             end;
         _ ->
-           Info = os:cmd("LANG=C"++Path ++ VsnArg),
+            Info = os:cmd("LANG=C "++Path ++ VsnArg),
             case re:run(Info, VsnRegex, [{capture, all_but_first, list}]) of
                 {match, Match} ->
                     list_to_tuple([list_to_integer(S) || S <- Match]);
