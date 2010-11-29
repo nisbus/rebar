@@ -319,7 +319,12 @@ update_source(AppDir, {git, _Url, {branch, Branch}}) ->
     end;
 update_source(AppDir, {git, _Url, {tag, Tag}}) ->
     rebar_utils:sh(?FMT("git fetch --tags origin", []), [], AppDir),
-    rebar_utils:sh(?FMT("git checkout -q ~s", [Tag]), [], AppDir);
+    case Tag of 
+       [] ->
+          rebar_utils:sh(?FMT("git checkout -q origin", []), [], AppDir);
+       _ ->
+          rebar_utils:sh(?FMT("git checkout -q origin/~s", [Tag]), [], AppDir)
+    end;
 update_source(AppDir, {git, Url, Refspec}) ->
     update_source(AppDir, {git, Url, {branch, Refspec}});
 update_source(AppDir, {svn, _Url, Rev}) ->
